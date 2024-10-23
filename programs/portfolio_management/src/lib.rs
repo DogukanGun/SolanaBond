@@ -16,6 +16,6 @@ pub mod portfolio_management {
     }
 
     pub fn invest_in_bond(ctx: Context<Fund>,amount:u64) -> Result<()> {
-        ctx.accounts.transfer_tokens(amount)
+        ctx.accounts.transfer_tokens(amount,&ctx.bumps)
     }
 }

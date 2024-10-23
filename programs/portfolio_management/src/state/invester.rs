@@ -10,6 +10,7 @@ pub struct InvestorsAccount {
     pub token_address: Pubkey,          // Token address for bond
     pub feed_id: [u8; 32],              // Feed id
     pub vault_bump: u8,
+    pub investers_bump: u8
 
 }
 

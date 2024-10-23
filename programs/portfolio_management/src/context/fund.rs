@@ -12,7 +12,7 @@ pub struct Fund<'info> {
     #[account(
         mut,
         seeds = [b"vault"],
-        bump = investers_account.vault_bump
+        bump
     )]
     pub vault: Account<'info, TokenAccount>, 
     pub token_program: Program<'info, Token>,
@@ -25,7 +25,8 @@ pub struct Fund<'info> {
 }
 
 impl<'info> Fund<'info> {
-    pub fn transfer_tokens(&mut self, amount: u64) -> Result<()> {
+    pub fn transfer_tokens(&mut self, amount: u64,bump:&FundBumps) -> Result<()> {
+        self.investers_account.vault_bump = bump.vault;
         let from_account = self.token_account.to_account_info();
         let to_account = self.vault.to_account_info();
 

@@ -22,7 +22,7 @@ pub struct CreateBond<'info> {
 impl<'info> CreateBond<'info>  {
     pub fn create_bond(&mut self,feed_id:String,bump:&CreateBondBumps) -> Result<()>{
         self.investers_account.feed_id = get_feed_id_from_hex(&feed_id)?;
-        self.investers_account.vault_bump = bump.investers_account;
+        self.investers_account.investers_bump = bump.investers_account;
         Ok(())
     }
 }
