@@ -11,7 +11,7 @@ declare_id!("91dxXHBrNHJQHkze1C8JuuTnE6nvg5r9Ltbs5NdD5MQZ");
 pub mod portfolio_management {
     use super::*;
 
-    pub fn initialize(ctx: Context<CreateBond>, feed_id: String) -> Result<()> {
+    pub fn create_bond(ctx: Context<CreateBond>, feed_id: String) -> Result<()> {
         ctx.accounts.create_bond(feed_id, &ctx.bumps)
     }
 
