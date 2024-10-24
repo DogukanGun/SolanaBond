@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{transfer, Token, TokenAccount, Transfer};
+use anchor_spl::token::{transfer, Mint, Token, TokenAccount, Transfer};
 
 use crate::state::InvestorsAccount;
 
@@ -7,29 +7,29 @@ use crate::state::InvestorsAccount;
 pub struct Fund<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
+    pub auth: SystemAccount<'info>,
+    #[account(mut)]
+    pub maker_token: Box<Account<'info, Mint>>,
+    #[account(mut)]
+    pub maker_ata: Account<'info, TokenAccount>,
     #[account(mut)]
     pub investers_account: Account<'info, InvestorsAccount>,
     #[account(
         mut,
         seeds = [b"vault"],
-        bump
+        bump = investers_account.vault_bump,
+        token::mint = maker_token,
+        token::authority = auth
     )]
-    pub vault: Account<'info, TokenAccount>, 
+    pub vault: Account<'info, TokenAccount>,
     pub token_program: Program<'info, Token>,
-    #[account(
-        mut,
-        constraint = token_account.mint == investers_account.token_address
-    )]
-    pub token_account: Account<'info, TokenAccount>,
     pub system_program: Program<'info, System>,
 }
 
 impl<'info> Fund<'info> {
-    pub fn transfer_tokens(&mut self, amount: u64,bump:&FundBumps) -> Result<()> {
-        self.investers_account.vault_bump = bump.vault;
-        let from_account = self.token_account.to_account_info();
+    pub fn transfer_tokens(&mut self, amount: u64) -> Result<()> {
+        let from_account = self.maker_ata.to_account_info();
         let to_account = self.vault.to_account_info();
-
         let transfer_instruction = Transfer {
             from: from_account.clone(),
             to: to_account.clone(),

@@ -16,6 +16,10 @@ pub mod portfolio_management {
     }
 
     pub fn invest_in_bond(ctx: Context<Fund>,amount:u64) -> Result<()> {
-        ctx.accounts.transfer_tokens(amount,&ctx.bumps)
+        ctx.accounts.transfer_tokens(amount)
+    }
+
+    pub fn trade(ctx: Context<Trade>,ethereum_price:f64) -> Result<()> {
+        ctx.accounts.trade(ethereum_price)
     }
 }
