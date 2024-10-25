@@ -1,7 +1,8 @@
 use pyth_solana_receiver_sdk::price_update::get_feed_id_from_hex;
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token, TokenAccount};
-use crate::state::InvestorsAccount;
+use crate::state::{InvestorsAccount, MAX_INVESTORS};
+
 
 #[derive(Accounts)]
 pub struct CreateBond<'info> {
@@ -12,8 +13,8 @@ pub struct CreateBond<'info> {
     #[account(
         init_if_needed,
         payer = payer,
-        space = 8 + InvestorsAccount::MAXIMUM_SIZE,
-        seeds = [b"investors"],
+        space = 8 + 4 + 32 * MAX_INVESTORS,
+        seeds = [b"investers".as_ref()],
         bump
     )]
     pub investors_account: Account<'info, InvestorsAccount>,
@@ -26,14 +27,14 @@ pub struct CreateBond<'info> {
         token::authority = payer
     )]
     pub vault: Account<'info, TokenAccount>,
-    pub system_program: Program<'info, System>,
     pub token_program: Program<'info, Token>,
+    pub system_program: Program<'info, System>,
 }
 
 impl<'info> CreateBond<'info>  {
     pub fn create_bond(&mut self, feed_id:String, bump:&CreateBondBumps) -> Result<()>{
         self.investors_account.feed_id = get_feed_id_from_hex(&feed_id)?;
-        self.investors_account.investors_bump = bump.investors_account;
+        self.investors_account.investers_bump = bump.investors_account;
         self.investors_account.vault_bump = bump.vault;
         Ok(())
     }

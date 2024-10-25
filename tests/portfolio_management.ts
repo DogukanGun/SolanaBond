@@ -3,8 +3,7 @@ import { BN, Program } from "@coral-xyz/anchor";
 import { PortfolioManagement } from "../target/types/portfolio_management";
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { ASSOCIATED_TOKEN_PROGRAM_ID as associatedTokenProgram, TOKEN_PROGRAM_ID as tokenProgram, createMint, createAccount, mintTo, getAssociatedTokenAddress, createTransferInstruction, getOrCreateAssociatedTokenAccount } from "@solana/spl-token"
-import { HermesClient, PriceUpdate, getPriceFeedAccountForProgram } from "@pythnetwork/hermes-client";
-import { expect } from "chai";
+import { HermesClient, PriceUpdate } from "@pythnetwork/hermes-client";
 
 describe("portfolio_management", () => {
   const provider = anchor.AnchorProvider.env();
@@ -20,14 +19,12 @@ describe("portfolio_management", () => {
 
   const maker = anchor.web3.Keypair.generate();
   const auth = anchor.web3.Keypair.generate();
-  const [investorsPDA, investorsBump] = anchor.web3.PublicKey.findProgramAddressSync(
-    [ Buffer.from("investors") ],
+  const [investersPDA, bump] = anchor.web3.PublicKey.findProgramAddressSync(
+    [
+      Buffer.from("investers"), // Constant seed
+    ],
     program.programId
   );
-  const defaultShardId = 0;
-  const investorsCapacity = 10;
-  const feedId = "0x63f341689d98a12ef60a5cff1d7f85c70a9e17bf1575f0e7c0b2512d48b1c8b3";
-
   const confirm = async (signature: string): Promise<string> => {
     const block = await provider.connection.getLatestBlockhash();
     console.log(block.blockhash)
@@ -89,30 +86,18 @@ describe("portfolio_management", () => {
   it("Create Bond!", async () => {
     const tx = await program
       .methods
-      .createBond(feedId)
+      .createBond("0x63f341689d98a12ef60a5cff1d7f85c70a9e17bf1575f0e7c0b2512d48b1c8b3")
       .accounts({
         payer: auth.publicKey,
         makerToken: authToken,
-        //investorsAccount: investorsPDA,
-        //vault: vaultPDA,
-        //systemProgram: anchor.web3.SystemProgram,
       })
       .signers([auth])
       .rpc();
     confirm(tx);
     console.log("Your transaction signature", tx);
-
-    let investorsAccount = await program.account.investorsAccount.fetch(investorsPDA);
-    expect(getPriceFeedAccountForProgram(defaultShardId, Buffer.from(investorsAccount.feedId)))
-      .eql(getPriceFeedAccountForProgram(defaultShardId, feedId));
-    expect(investorsAccount.numInvestors).equal(0);
-    expect(investorsAccount.investors).to.be.an("array").of.length(investorsCapacity);
-    expect(investorsAccount.tokenAddress.equals(authToken)); // ones
-    expect(investorsAccount.investorsBump).equal(investorsBump);
-    expect(investorsAccount.vaultBump).equal(vaultBump);
   });
 
- it("Invest in Bond!", async () => {
+  it("Invest in Bond!", async () => {
     const maker_ata_address = await getOrCreateAssociatedTokenAccount(provider.connection, maker,
       authToken,
       maker.publicKey);
@@ -121,7 +106,6 @@ describe("portfolio_management", () => {
       .investInBond(new BN(1 * LAMPORTS_PER_SOL))
       .accounts({
         payer: maker.publicKey,
-        investorsAccount: investorsPDA,
         makerAta: maker_ata_address.address,
         makerToken: authToken,
         auth: auth.publicKey,
@@ -145,7 +129,6 @@ describe("portfolio_management", () => {
       .methods
       .trade(priceValue)
       .accounts({
-        investorsAccount: investorsPDA,
         payer: auth.publicKey,
       })
       .signers([auth])
@@ -154,4 +137,5 @@ describe("portfolio_management", () => {
     console.log("Your transaction signature", tx);
 
   });
+
 });

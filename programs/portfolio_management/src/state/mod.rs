@@ -1,2 +1,2 @@
-pub mod investor;
-pub use investor::*;
+pub mod invester;
+pub use invester::*;

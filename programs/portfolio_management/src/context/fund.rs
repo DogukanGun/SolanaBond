@@ -12,12 +12,16 @@ pub struct Fund<'info> {
     pub maker_token: Box<Account<'info, Mint>>,
     #[account(mut)]
     pub maker_ata: Account<'info, TokenAccount>,
-    #[account(mut)]
-    pub investors_account: Account<'info, InvestorsAccount>,
+    #[account(
+        mut,
+        seeds = [b"investers".as_ref()],
+        bump = investers_account.investers_bump
+    )]
+    pub investers_account: Account<'info, InvestorsAccount>,
     #[account(
         mut,
         seeds = [b"vault"],
-        bump = investors_account.vault_bump,
+        bump = investers_account.vault_bump,
         token::mint = maker_token,
         token::authority = auth
     )]
