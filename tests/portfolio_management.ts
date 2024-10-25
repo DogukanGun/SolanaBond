@@ -13,7 +13,7 @@ describe("portfolio_management", () => {
 
   const program = anchor.workspace.PortfolioManagement as Program<PortfolioManagement>;
   const [vaultPDA, vaultBump] = anchor.web3.PublicKey.findProgramAddressSync(
-    [ Buffer.from("vault") ],
+    [Buffer.from("vault")],
     program.programId
   );
   let authToken: PublicKey;
@@ -156,4 +156,25 @@ describe("portfolio_management", () => {
 
   });
 
+  it("Redeem Bond!", async () => {
+    const maker_ata_address = await getOrCreateAssociatedTokenAccount(
+      provider.connection,
+      maker,
+      authToken,
+      maker.publicKey
+    );
+    const tx = await program
+      .methods
+      .redeemBond()
+      .accounts({
+        payer: maker.publicKey,
+        makerToken: authToken,
+        auth: auth.publicKey,
+        makerAta: maker_ata_address.address,
+      })
+      .signers([maker,auth])
+      .rpc();
+    confirm(tx);
+    console.log("Your transaction signature", tx);
+  });
 });

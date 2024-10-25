@@ -22,4 +22,8 @@ pub mod portfolio_management {
     pub fn trade(ctx: Context<Trade>, ethereum_price: f64) -> Result<()> {
         ctx.accounts.trade(ethereum_price)
     }
+
+    pub fn redeem_bond(ctx: Context<Take>) -> Result<()> {
+        ctx.accounts.withdraw()
+    }
 }
