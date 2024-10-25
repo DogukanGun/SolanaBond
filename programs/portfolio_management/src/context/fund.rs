@@ -14,7 +14,7 @@ pub struct Fund<'info> {
     pub maker_ata: Account<'info, TokenAccount>,
     #[account(
         mut,
-        seeds = [b"investors".as_ref()],
+        seeds = [b"investors"],
         bump = investors_account.investors_bump
     )]
     pub investors_account: Account<'info, InvestorsAccount>,

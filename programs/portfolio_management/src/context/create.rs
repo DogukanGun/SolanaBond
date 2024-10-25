@@ -14,7 +14,7 @@ pub struct CreateBond<'info> {
         init_if_needed,
         payer = payer,
         space = 8 + InvestorsAccount::MAXIMUM_SIZE,
-        seeds = [b"investors".as_ref()],
+        seeds = [b"investors"],
         bump
     )]
     pub investors_account: Account<'info, InvestorsAccount>,
