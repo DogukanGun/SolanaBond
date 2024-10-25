@@ -17,7 +17,7 @@ pub struct Fund<'info> {
     #[account(
         mut,
         seeds = [b"vault"],
-        bump = investers_account.vault_bump,
+        bump = investors_account.vault_bump,
         token::mint = maker_token,
         token::authority = auth
     )]

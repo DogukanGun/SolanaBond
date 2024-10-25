@@ -9,11 +9,11 @@ pub struct Trade<'info> {
     pub payer: Signer<'info>,
     pub price_update: Account<'info, PriceUpdateV2>,
     #[account(mut)]
-    pub investers_account: Account<'info, InvestorsAccount>,
+    pub investors_account: Account<'info, InvestorsAccount>,
     #[account(
         mut,
         seeds = [b"vault"],
-        bump = investers_account.vault_bump,
+        bump = investors_account.vault_bump,
     )]
     pub vault: Account<'info, TokenAccount>,
     pub token_program: Program<'info, Token>,
@@ -25,7 +25,7 @@ impl<'info> Trade<'info> {
         let price = self.price_update.get_price_no_older_than(
             &Clock::get()?,
             30,
-            &self.investers_account.feed_id,
+            &self.investors_account.feed_id,
         )?;
         let price_value = price.price as f64 * 10_f64.powi(price.exponent);
         msg!("Price value: {}", price_value);

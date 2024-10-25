@@ -4,26 +4,29 @@ import { PortfolioManagement } from "../target/types/portfolio_management";
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { ASSOCIATED_TOKEN_PROGRAM_ID as associatedTokenProgram, TOKEN_PROGRAM_ID as tokenProgram, createMint, createAccount, mintTo, getAssociatedTokenAddress, createTransferInstruction, getOrCreateAssociatedTokenAccount } from "@solana/spl-token"
 import { HermesClient, PriceUpdate, getPriceFeedAccountForProgram } from "@pythnetwork/hermes-client";
+import { expect } from "chai";
 
 describe("portfolio_management", () => {
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
 
   const program = anchor.workspace.PortfolioManagement as Program<PortfolioManagement>;
-  const vault = PublicKey.findProgramAddressSync([Buffer.from("vault")], program.programId)[0];
-  let auth_token: PublicKey;
-  let auth_ata: PublicKey;
+  const [vaultPDA, vaultBump] = anchor.web3.PublicKey.findProgramAddressSync(
+    [ Buffer.from("vault") ],
+    program.programId
+  );
+  let authToken: PublicKey;
+  let authAta: PublicKey;
 
   const maker = anchor.web3.Keypair.generate();
   const auth = anchor.web3.Keypair.generate();
-  const [investersPDA, bump] = anchor.web3.PublicKey.findProgramAddressSync(
-    [
-      Buffer.from("investors"), // Constant seed
-    ],
+  const [investorsPDA, investorsBump] = anchor.web3.PublicKey.findProgramAddressSync(
+    [ Buffer.from("investors") ],
     program.programId
   );
   const defaultShardId = 0;
   const investorsCapacity = 10;
+  const feedId = "0x63f341689d98a12ef60a5cff1d7f85c70a9e17bf1575f0e7c0b2512d48b1c8b3";
 
   const confirm = async (signature: string): Promise<string> => {
     const block = await provider.connection.getLatestBlockhash();
@@ -55,21 +58,23 @@ describe("portfolio_management", () => {
   })
   it("Create Mint", async () => {
     const a = await newMintToAta(anchor.getProvider().connection, auth);
-    auth_token = a.mint;
-    auth_ata = a.ata;
+    authToken = a.mint;
+    authAta = a.ata;
   });
   it("Transfer Mint to Maker", async () => {
-    const auth_token_balance = await provider.connection.getTokenAccountBalance(auth_ata);
-    const amount_to_transfer = new BN(parseInt(auth_token_balance.value.amount) / 2);
-    const maker_ata_address = await getOrCreateAssociatedTokenAccount(provider.connection, maker,
-      auth_token,             // Token mint
-      maker.publicKey);
+    const authTokenBalance = await provider.connection.getTokenAccountBalance(authAta);
+    const amountToTransfer = new BN(parseInt(authTokenBalance.value.amount) / 2);
+    const makerAtaAddress = await getOrCreateAssociatedTokenAccount(
+      provider.connection, maker,
+      authToken,              // Token mint
+      maker.publicKey
+    );
 
     const transferInstruction = createTransferInstruction(
-      auth_ata,
-      maker_ata_address.address,
+      authAta,
+      makerAtaAddress.address,
       auth.publicKey,
-      amount_to_transfer.toNumber(),
+      amountToTransfer.toNumber(),
       [],
       tokenProgram
     );
@@ -77,47 +82,48 @@ describe("portfolio_management", () => {
     const signature = await provider.sendAndConfirm(tx, [auth]);
     await confirm(signature);
     console.log("Half of the tokens transferred to maker, signature:", signature);
-    console.log("Auth balance", await provider.connection.getTokenAccountBalance(auth_ata));
-    console.log("Maker balance", await provider.connection.getTokenAccountBalance(maker_ata_address.address));
+    console.log("Auth balance", await provider.connection.getTokenAccountBalance(authAta));
+    console.log("Maker balance", await provider.connection.getTokenAccountBalance(makerAtaAddress.address));
 
   });
   it("Create Bond!", async () => {
     const tx = await program
       .methods
-      .createBond("0x63f341689d98a12ef60a5cff1d7f85c70a9e17bf1575f0e7c0b2512d48b1c8b3")
-      .accountsPartial({
+      .createBond(feedId)
+      .accounts({
         payer: auth.publicKey,
-        makerToken: auth_token,
-        investersAccount: investersPDA,
-        vault: vault,
+        makerToken: authToken,
+        //investorsAccount: investorsPDA,
+        //vault: vaultPDA,
+        //systemProgram: anchor.web3.SystemProgram,
       })
       .signers([auth])
       .rpc();
     confirm(tx);
     console.log("Your transaction signature", tx);
-    
-    let investorsAccount = await program.account.investorsAccount.fetch(investersPDA);
+
+    let investorsAccount = await program.account.investorsAccount.fetch(investorsPDA);
     expect(getPriceFeedAccountForProgram(defaultShardId, Buffer.from(investorsAccount.feedId)))
       .eql(getPriceFeedAccountForProgram(defaultShardId, feedId));
     expect(investorsAccount.numInvestors).equal(0);
     expect(investorsAccount.investors).to.be.an("array").of.length(investorsCapacity);
-    expect(investorsAccount.tokenAddress.equals(anchor.web3.PublicKey.default)); // ones
-    expect(investorsAccount.investorsBump).equal(bump);
-    expect(investorsAccount.vaultBump).equal(0);
+    expect(investorsAccount.tokenAddress.equals(authToken)); // ones
+    expect(investorsAccount.investorsBump).equal(investorsBump);
+    expect(investorsAccount.vaultBump).equal(vaultBump);
   });
-  
+
  it("Invest in Bond!", async () => {
     const maker_ata_address = await getOrCreateAssociatedTokenAccount(provider.connection, maker,
-      auth_token,
+      authToken,
       maker.publicKey);
     const tx = await program
       .methods
       .investInBond(new BN(1 * LAMPORTS_PER_SOL))
       .accounts({
         payer: maker.publicKey,
-        investersAccount: investersPDA,
+        investorsAccount: investorsPDA,
         makerAta: maker_ata_address.address,
-        makerToken: auth_token,
+        makerToken: authToken,
         auth: auth.publicKey,
       })
       .signers([maker])
@@ -125,7 +131,7 @@ describe("portfolio_management", () => {
     confirm(tx);
     console.log("Your transaction signature", tx);
   });
-  
+
   it("Get Price and make decision and then trade", async () => {
     const connection = new HermesClient("https://hermes.pyth.network", {});
     const priceIds = [
@@ -139,7 +145,7 @@ describe("portfolio_management", () => {
       .methods
       .trade(priceValue)
       .accounts({
-        investersAccount: investersPDA,
+        investorsAccount: investorsPDA,
         payer: auth.publicKey,
       })
       .signers([auth])
