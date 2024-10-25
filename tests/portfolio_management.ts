@@ -4,6 +4,7 @@ import { PortfolioManagement } from "../target/types/portfolio_management";
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { ASSOCIATED_TOKEN_PROGRAM_ID as associatedTokenProgram, TOKEN_PROGRAM_ID as tokenProgram, createMint, createAccount, mintTo, getAssociatedTokenAddress, createTransferInstruction, getOrCreateAssociatedTokenAccount } from "@solana/spl-token"
 import { HermesClient, PriceUpdate } from "@pythnetwork/hermes-client";
+import { expect } from "chai";
 
 describe("portfolio_management", () => {
   const provider = anchor.AnchorProvider.env();
@@ -19,12 +20,16 @@ describe("portfolio_management", () => {
 
   const maker = anchor.web3.Keypair.generate();
   const auth = anchor.web3.Keypair.generate();
-  const [investorsPDA, bump] = anchor.web3.PublicKey.findProgramAddressSync(
+  const [investorsPDA, investorsBump] = anchor.web3.PublicKey.findProgramAddressSync(
     [
       Buffer.from("investors"), // Constant seed
     ],
     program.programId
   );
+  const defaultShardId = 0;
+  const investorsCapacity = 10;
+  const feedId = "0x63f341689d98a12ef60a5cff1d7f85c70a9e17bf1575f0e7c0b2512d48b1c8b3";
+
   const confirm = async (signature: string): Promise<string> => {
     const block = await provider.connection.getLatestBlockhash();
     console.log(block.blockhash)
@@ -86,7 +91,7 @@ describe("portfolio_management", () => {
   it("Create Bond!", async () => {
     const tx = await program
       .methods
-      .createBond("0x63f341689d98a12ef60a5cff1d7f85c70a9e17bf1575f0e7c0b2512d48b1c8b3")
+      .createBond(feedId)
       .accounts({
         payer: auth.publicKey,
         makerToken: authToken,
@@ -95,6 +100,15 @@ describe("portfolio_management", () => {
       .rpc();
     confirm(tx);
     console.log("Your transaction signature", tx);
+    let investorsAccount = await program.account.investorsAccount.fetch(investorsPDA);
+    //expect(getPriceFeedAccountForProgram(defaultShardId, Buffer.from(investorsAccount.feedId)))
+      //.eql(getPriceFeedAccountForProgram(defaultShardId, feedId));
+    expect(investorsAccount.numInvestors).equal(0);
+    expect(investorsAccount.investors).to.be.an("array").that.is.empty;
+    expect(investorsAccount.tokenAddress.equals(anchor.web3.PublicKey.default)); // ones
+    expect(investorsAccount.investorsBump).equal(investorsBump);
+    expect(investorsAccount.vaultBump).equal(vaultBump);
+
   });
 
   it("Invest in Bond!", async () => {
