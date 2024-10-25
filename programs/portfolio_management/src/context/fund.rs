@@ -14,14 +14,14 @@ pub struct Fund<'info> {
     pub maker_ata: Account<'info, TokenAccount>,
     #[account(
         mut,
-        seeds = [b"investers".as_ref()],
-        bump = investers_account.investers_bump
+        seeds = [b"investors".as_ref()],
+        bump = investors_account.investors_bump
     )]
-    pub investers_account: Account<'info, InvestorsAccount>,
+    pub investors_account: Account<'info, InvestorsAccount>,
     #[account(
         mut,
         seeds = [b"vault"],
-        bump = investers_account.vault_bump,
+        bump = investors_account.vault_bump,
         token::mint = maker_token,
         token::authority = auth
     )]

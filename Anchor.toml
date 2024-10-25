@@ -12,6 +12,7 @@ url = "https://api.apr.dev"
 
 [provider]
 cluster = "http://localhost:8899"
+ws = "ws://localhost:8900/"
 wallet = "~/.config/solana/id.json"
 
 [scripts]

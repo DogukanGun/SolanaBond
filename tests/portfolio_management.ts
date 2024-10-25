@@ -19,9 +19,9 @@ describe("portfolio_management", () => {
 
   const maker = anchor.web3.Keypair.generate();
   const auth = anchor.web3.Keypair.generate();
-  const [investersPDA, bump] = anchor.web3.PublicKey.findProgramAddressSync(
+  const [investorsPDA, bump] = anchor.web3.PublicKey.findProgramAddressSync(
     [
-      Buffer.from("investers"), // Constant seed
+      Buffer.from("investors"), // Constant seed
     ],
     program.programId
   );
