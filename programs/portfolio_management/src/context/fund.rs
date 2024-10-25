@@ -13,7 +13,7 @@ pub struct Fund<'info> {
     #[account(mut)]
     pub maker_ata: Account<'info, TokenAccount>,
     #[account(mut)]
-    pub investers_account: Account<'info, InvestorsAccount>,
+    pub investors_account: Account<'info, InvestorsAccount>,
     #[account(
         mut,
         seeds = [b"vault"],

@@ -3,7 +3,6 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token, TokenAccount};
 use crate::state::{InvestorsAccount,MAX_INVESTORS};
 
-
 #[derive(Accounts)]
 pub struct CreateBond<'info> {
     #[account(mut)]
@@ -13,8 +12,8 @@ pub struct CreateBond<'info> {
     #[account(
         init_if_needed,
         payer = payer,
-        space = 8 + 4 + 32 * MAX_INVESTORS,
-        seeds = [b"investers".as_ref()],
+        space = 8 + InvestorsAccount::MAXIMUM_SIZE,
+        seeds = [b"investors"],
         bump
     )]
     pub investers_account: Account<'info, InvestorsAccount>,
@@ -28,6 +27,7 @@ pub struct CreateBond<'info> {
     )]
     pub vault: Account<'info, TokenAccount>,
     pub token_program: Program<'info, Token>,
+
     pub system_program: Program<'info, System>,
 }
 

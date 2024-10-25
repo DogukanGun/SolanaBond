@@ -3,7 +3,7 @@ import { BN, Program } from "@coral-xyz/anchor";
 import { PortfolioManagement } from "../target/types/portfolio_management";
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { ASSOCIATED_TOKEN_PROGRAM_ID as associatedTokenProgram, TOKEN_PROGRAM_ID as tokenProgram, createMint, createAccount, mintTo, getAssociatedTokenAddress, createTransferInstruction, getOrCreateAssociatedTokenAccount } from "@solana/spl-token"
-import { HermesClient, PriceUpdate } from "@pythnetwork/hermes-client";
+import { HermesClient, PriceUpdate, getPriceFeedAccountForProgram } from "@pythnetwork/hermes-client";
 
 describe("portfolio_management", () => {
   const provider = anchor.AnchorProvider.env();
@@ -18,10 +18,13 @@ describe("portfolio_management", () => {
   const auth = anchor.web3.Keypair.generate();
   const [investersPDA, bump] = anchor.web3.PublicKey.findProgramAddressSync(
     [
-      Buffer.from("investers"), // Constant seed
+      Buffer.from("investors"), // Constant seed
     ],
     program.programId
   );
+  const defaultShardId = 0;
+  const investorsCapacity = 10;
+
   const confirm = async (signature: string): Promise<string> => {
     const block = await provider.connection.getLatestBlockhash();
     console.log(block.blockhash)
@@ -92,9 +95,18 @@ describe("portfolio_management", () => {
       .rpc();
     confirm(tx);
     console.log("Your transaction signature", tx);
+    
+    let investorsAccount = await program.account.investorsAccount.fetch(investersPDA);
+    expect(getPriceFeedAccountForProgram(defaultShardId, Buffer.from(investorsAccount.feedId)))
+      .eql(getPriceFeedAccountForProgram(defaultShardId, feedId));
+    expect(investorsAccount.numInvestors).equal(0);
+    expect(investorsAccount.investors).to.be.an("array").of.length(investorsCapacity);
+    expect(investorsAccount.tokenAddress.equals(anchor.web3.PublicKey.default)); // ones
+    expect(investorsAccount.investorsBump).equal(bump);
+    expect(investorsAccount.vaultBump).equal(0);
   });
-
-  it("Invest in Bond!", async () => {
+  
+ it("Invest in Bond!", async () => {
     const maker_ata_address = await getOrCreateAssociatedTokenAccount(provider.connection, maker,
       auth_token,
       maker.publicKey);
@@ -113,7 +125,7 @@ describe("portfolio_management", () => {
     confirm(tx);
     console.log("Your transaction signature", tx);
   });
-
+  
   it("Get Price and make decision and then trade", async () => {
     const connection = new HermesClient("https://hermes.pyth.network", {});
     const priceIds = [
@@ -136,5 +148,4 @@ describe("portfolio_management", () => {
     console.log("Your transaction signature", tx);
 
   });
-
 });
