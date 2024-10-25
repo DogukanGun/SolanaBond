@@ -1,7 +1,7 @@
 use pyth_solana_receiver_sdk::price_update::get_feed_id_from_hex;
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token, TokenAccount};
-use crate::state::InvestorsAccount;
+use crate::state::{Investor, InvestorsAccount};
 
 
 #[derive(Accounts)]
@@ -36,6 +36,7 @@ impl<'info> CreateBond<'info>  {
         self.investors_account.feed_id = get_feed_id_from_hex(&feed_id)?;
         self.investors_account.investors_bump = bump.investors_account;
         self.investors_account.vault_bump = bump.vault;
+        self.investors_account.investors = Vec::with_capacity(Investor::INVESTORS_CAPACITY);
         Ok(())
     }
 }
