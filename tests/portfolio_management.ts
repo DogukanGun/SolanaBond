@@ -19,6 +19,7 @@ describe("portfolio_management", () => {
     program.programId
   );
   const defaultShardId = 0;
+  const investorsCapacity = 10;
 
   const confirm = async (signature: string): Promise<string> => {
     const block = await provider.connection.getLatestBlockhash();
@@ -54,7 +55,7 @@ describe("portfolio_management", () => {
     expect(getPriceFeedAccountForProgram(defaultShardId, Buffer.from(investorsAccount.feedId)))
       .eql(getPriceFeedAccountForProgram(defaultShardId, feedId));
     expect(investorsAccount.numInvestors).equal(0);
-    expect(investorsAccount.investors).to.be.an("array").that.is.empty;
+    expect(investorsAccount.investors).to.be.an("array").of.length(investorsCapacity);
     expect(investorsAccount.tokenAddress.equals(anchor.web3.PublicKey.default)); // ones
     expect(investorsAccount.investorsBump).equal(bump);
     expect(investorsAccount.vaultBump).equal(0);
