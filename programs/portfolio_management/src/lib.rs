@@ -12,7 +12,7 @@ pub mod portfolio_management {
     use super::*;
 
     pub fn create_bond(ctx: Context<CreateBond>, feed_id: String) -> Result<()> {
-        ctx.accounts.create_bond(feed_id,&ctx.bumps)
+        ctx.accounts.create_bond(feed_id, &ctx.bumps)
     }
 
     pub fn invest_in_bond(ctx: Context<Fund>, amount: u64) -> Result<()> {

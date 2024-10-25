@@ -4,6 +4,7 @@ import { PortfolioManagement } from "../target/types/portfolio_management";
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { ASSOCIATED_TOKEN_PROGRAM_ID as associatedTokenProgram, TOKEN_PROGRAM_ID as tokenProgram, createMint, createAccount, mintTo, getAssociatedTokenAddress, createTransferInstruction, getOrCreateAssociatedTokenAccount } from "@solana/spl-token"
 import { HermesClient, PriceUpdate } from "@pythnetwork/hermes-client";
+import { getPriceFeedAccountForProgram } from "@pythnetwork/pyth-solana-receiver"
 import { expect } from "chai";
 
 describe("portfolio_management", () => {
@@ -101,8 +102,8 @@ describe("portfolio_management", () => {
     confirm(tx);
     console.log("Your transaction signature", tx);
     let investorsAccount = await program.account.investorsAccount.fetch(investorsPDA);
-    //expect(getPriceFeedAccountForProgram(defaultShardId, Buffer.from(investorsAccount.feedId)))
-      //.eql(getPriceFeedAccountForProgram(defaultShardId, feedId));
+    expect(getPriceFeedAccountForProgram(defaultShardId, Buffer.from(investorsAccount.feedId)))
+      .eql(getPriceFeedAccountForProgram(defaultShardId, feedId));
     expect(investorsAccount.numInvestors).equal(0);
     expect(investorsAccount.investors).to.be.an("array").that.is.empty;
     expect(investorsAccount.tokenAddress.equals(anchor.web3.PublicKey.default)); // ones
@@ -112,9 +113,12 @@ describe("portfolio_management", () => {
   });
 
   it("Invest in Bond!", async () => {
-    const maker_ata_address = await getOrCreateAssociatedTokenAccount(provider.connection, maker,
+    const maker_ata_address = await getOrCreateAssociatedTokenAccount(
+      provider.connection,
+      maker,
       authToken,
-      maker.publicKey);
+      maker.publicKey
+    );
     const tx = await program
       .methods
       .investInBond(new BN(1 * LAMPORTS_PER_SOL))
