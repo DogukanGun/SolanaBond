@@ -3,7 +3,7 @@ use anchor_lang::prelude::*;
 pub mod context;
 use context::*;
 pub mod state;
-pub mod errors;
+
 
 declare_id!("91dxXHBrNHJQHkze1C8JuuTnE6nvg5r9Ltbs5NdD5MQZ");
 
@@ -16,6 +16,14 @@ pub mod portfolio_management {
     }
 
     pub fn invest_in_bond(ctx: Context<Fund>, amount: u64) -> Result<()> {
-        ctx.accounts.transfer_tokens(amount, &ctx.bumps)
+        ctx.accounts.transfer_tokens(amount)
+    }
+
+    pub fn trade(ctx: Context<Trade>, ethereum_price: f64) -> Result<()> {
+        ctx.accounts.trade(ethereum_price)
+    }
+
+    pub fn redeem_bond(ctx: Context<Take>) -> Result<()> {
+        ctx.accounts.withdraw()
     }
 }

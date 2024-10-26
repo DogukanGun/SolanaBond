@@ -1,15 +1,15 @@
+use crate::state::InvestorsAccount;
 use anchor_lang::prelude::*;
 use anchor_spl::token::{transfer, Mint, Token, TokenAccount, Transfer};
 
-use crate::state::InvestorsAccount;
-
 #[derive(Accounts)]
-pub struct Fund<'info> {
+pub struct Take<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
-    pub auth: SystemAccount<'info>,
     #[account(mut)]
     pub maker_token: Box<Account<'info, Mint>>,
+    #[account(mut)]
+    pub auth: Signer<'info>,
     #[account(mut)]
     pub maker_ata: Account<'info, TokenAccount>,
     #[account(
@@ -27,23 +27,21 @@ pub struct Fund<'info> {
     )]
     pub vault: Account<'info, TokenAccount>,
     pub token_program: Program<'info, Token>,
+    pub associated_token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
 }
 
-impl<'info> Fund<'info> {
-    pub fn transfer_tokens(&mut self, amount: u64) -> Result<()> {
-        let from_account = self.maker_ata.to_account_info();
-        let to_account = self.vault.to_account_info();
-        let transfer_instruction = Transfer {
-            from: from_account.clone(),
-            to: to_account.clone(),
-            authority: self.payer.to_account_info(),
+impl<'info> Take<'info> {
+    pub fn withdraw(&self) -> Result<()> {
+        let cpi_accounts = Transfer {
+            from: self.vault.to_account_info(),
+            to: self.maker_ata.to_account_info(),
+            authority: self.auth.to_account_info(),
         };
-
-        let cpi_ctx = CpiContext::new(self.token_program.to_account_info(), transfer_instruction);
-
-        transfer(cpi_ctx, amount)?;
-
-        Ok(())
+        let ctx = CpiContext::new(
+            self.token_program.to_account_info(),
+            cpi_accounts,
+        );
+        transfer(ctx, self.vault.amount)
     }
 }

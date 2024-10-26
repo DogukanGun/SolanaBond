@@ -5,7 +5,10 @@
     "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check"
   },
   "dependencies": {
-    "@coral-xyz/anchor": "^0.30.1"
+    "@coral-xyz/anchor": "^0.30.1",
+    "@pythnetwork/hermes-client": "^1.1.0",
+    "@solana/spl-token": "^0.4.9",
+    "axios": "^1.7.7"
   },
   "devDependencies": {
     "@pythnetwork/pyth-solana-receiver": "^0.8.2",
@@ -15,7 +18,7 @@
     "chai": "^4.3.4",
     "mocha": "^9.0.3",
     "prettier": "^2.6.2",
-    "rpc-websockets": "7.9.0",
+    "rpc-websockets": "^7.9.0",
     "ts-mocha": "^10.0.0",
     "typescript": "^4.3.5"
   }
