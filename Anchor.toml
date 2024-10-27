@@ -5,15 +5,22 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-portfolio_management = "91dxXHBrNHJQHkze1C8JuuTnE6nvg5r9Ltbs5NdD5MQZ"
+portfolio_management = "E31tdKPpY99KpeWX1TKzi5wycWApYTJ7UAaiKNgUrhBF"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "http://localhost:8899"
-ws = "ws://localhost:8900/"
+cluster = "Localnet"
 wallet = "~/.config/solana/id.json"
 
+[workspace]
+members = ["programs/portfolio_management"]
+
 [scripts]
-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+test = "npx ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+
+[test]
+startup_wait = 10000
+shutdown_wait = 2000
+upgradeable = false
