@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{transfer, Mint, Token, TokenAccount, Transfer};
 
-use crate::state::InvestorsAccount;
+use crate::state::{Investor, InvestorsAccount};
 
 #[derive(Accounts)]
 pub struct Fund<'info> {
@@ -43,6 +43,15 @@ impl<'info> Fund<'info> {
         let cpi_ctx = CpiContext::new(self.token_program.to_account_info(), transfer_instruction);
 
         transfer(cpi_ctx, amount)?;
+
+        let amount_as_f32 = amount as f32 / 10_u32.pow(6_u32) as f32;
+
+        let investors: &mut Vec<Investor> = &mut self.investors_account.investors;
+        if let Some(investor) = investors.iter_mut().find(|investor| investor.identifier == to_account.key()) {
+            investor.amount += amount_as_f32;
+        } else {
+            self.investors_account.investors.push(Investor::new(to_account.key(), amount_as_f32))
+        }
 
         Ok(())
     }

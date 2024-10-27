@@ -23,15 +23,23 @@ impl InvestorsAccount {
         (1) +                                                           // vault_bump
         (1);                                                            // investors_bump
 }
-        //space = 8 + 4 + 32 * MAX_INVESTORS,
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
 pub struct Investor {
-    pub identifier:Pubkey,
-    pub amount:u32
+    pub identifier: Pubkey,             // Investor address
+    pub amount: f32,                    // Total amount invested
+    pub net_profit: f32,                // Total net profit, cannot be negative
 }
 
 impl Investor {
     pub const INVESTORS_CAPACITY: usize = 10;
-    pub const MAXIMUM_SIZE: usize = (32) + (4);
+    pub const MAXIMUM_SIZE: usize = (32) + (4) + (4);
+
+    pub fn new(identifier: Pubkey, amount: f32) -> Self {
+        Self {
+            identifier,
+            amount,
+            net_profit: 0_f32,
+        }
+    }
 }
