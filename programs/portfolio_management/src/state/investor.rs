@@ -1,14 +1,25 @@
-use anchor_lang::prelude::*;
-
+use anchor_lang::{prelude::*, solana_program::{self, clock::Epoch}};
 
 pub const MAX_INVESTORS: usize = 10;
+
+#[account]
+pub struct ChainlinkAccountInfo {
+    pub key: Pubkey,
+    pub is_signer: bool,
+    pub is_writable: bool,
+    pub lamports: u64,
+    pub data: Box<[u8]>,
+    pub owner: Pubkey,
+    pub executable: bool,
+    pub rent_epoch: Epoch,
+}
 
 #[account]
 pub struct InvestorsAccount {
     pub num_investors: u8,              // Number of investors      (1)
     pub investors: Vec<Investor>,       // Vector of investors      (4 + (item_size * capacity))
     pub token_address: Pubkey,          // Token address for bond   (32)
-    pub feed_id: [u8; 32],              // Feed id                  (32)
+    pub accounts: [ChainlinkAccountInfo;2],          // Chainlink Addresses      (32)
     pub vault_bump: u8,                 // Vault token account      (1)
     pub investors_bump: u8              // Investors account        (1)
 
@@ -19,7 +30,7 @@ impl InvestorsAccount {
         (1) +                                                           // num_investors
         (4 + Investor::MAXIMUM_SIZE * Investor::INVESTORS_CAPACITY) +   // investors
         (32) +                                                          // token_address
-        (32) +                                                          // feed_id
+        (32 * 2) +                                                      // feed_id
         (1) +                                                           // vault_bump
         (1);                                                            // investors_bump
 }

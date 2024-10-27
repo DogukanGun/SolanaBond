@@ -3,16 +3,19 @@ use anchor_lang::prelude::*;
 pub mod context;
 use context::*;
 pub mod state;
+use state::*;
 
 
 declare_id!("E31tdKPpY99KpeWX1TKzi5wycWApYTJ7UAaiKNgUrhBF");
 
 #[program]
 pub mod portfolio_management {
+    use state::ChainlinkAccountInfo;
+
     use super::*;
 
-    pub fn create_bond(ctx: Context<CreateBond>, feed_id: String) -> Result<()> {
-        ctx.accounts.create_bond(feed_id, &ctx.bumps)
+    pub fn create_bond(ctx: Context<CreateBond>, chainlink_accounts: [ChainlinkAccountInfo;2]) -> Result<()> {
+        ctx.accounts.create_bond(chainlink_accounts, &ctx.bumps)
     }
 
     pub fn invest_in_bond(ctx: Context<Fund>, amount: u64) -> Result<()> {
