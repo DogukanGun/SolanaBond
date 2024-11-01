@@ -26,4 +26,5 @@ anchor-spl = { workspace = true }
 wormhole-anchor-sdk = { path = "../../modules/wormhole-anchor-sdk", default-features = false, features = [
   "token-bridge"
 ] }
+wormhole-io = { workspace = true }
 #pyth-solana-receiver-sdk = { workspace = true }
