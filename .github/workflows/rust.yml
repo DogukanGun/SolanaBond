@@ -19,13 +19,8 @@ jobs:
     # Install Solana CLI
     - name: Install Solana CLI
       run: |
-        sh -c "$(curl -sSfL https://release.solana.com/stable/install)"
+        sh -c "$(curl -sSfL https://release.anza.xyz/v1.15.2/install)"
         echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
-
-    # Install Anchor CLI
-    - name: Install Anchor CLI
-      run: |
-        npm install -g @project-serum/anchor-cli
 
     # Set up Rust and dependencies
     - name: Install Rust
@@ -34,6 +29,10 @@ jobs:
         toolchain: stable
         override: true
         components: rustfmt, clippy
+        # Install Anchor CLI
+    - name: Install Anchor CLI
+      run: |
+        cargo install --git https://github.com/coral-xyz/anchor --tag v0.30.1 anchor-cli
 
     - name: List rustup toolchains
       run: rustup toolchain list
