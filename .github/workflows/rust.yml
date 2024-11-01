@@ -43,10 +43,6 @@ jobs:
     - name: List rustup toolchains
       run: rustup toolchain list
 
-    # Generate a new Solana keypair
-    - name: Generate new keygen
-      run: solana-keygen new --no-outfile
-
     # Set Solana target cluster to local
     - name: Set solana target cluster to local
       run: solana config set --url http://localhost:8899
