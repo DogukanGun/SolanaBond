@@ -11,30 +11,57 @@ env:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
-    - name: Build
-      run: cargo build --verbose
-    - name: Run tests
-      run: cargo test --verbose
+
+    # Install Solana CLI
+    - name: Install Solana CLI
+      run: |
+        sh -c "$(curl -sSfL https://release.solana.com/stable/install)"
+        echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+
+    # Install Anchor CLI
+    - name: Install Anchor CLI
+      run: |
+        npm install -g @project-serum/anchor-cli
+
+    # Set up Rust and dependencies
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
+        components: rustfmt, clippy
+
     - name: List rustup toolchains
       run: rustup toolchain list
+
     - name: Set default toolchain
       run: rustup default stable
+
     - name: List rustup toolchains
       run: rustup toolchain list
+
+    # Generate a new Solana keypair
     - name: Generate new keygen
-      run: solana-keygen new
+      run: solana-keygen new --no-outfile
+
+    # Set Solana target cluster to local
     - name: Set solana target cluster to local
-      run: solana config set --url http:localhost:8899
+      run: solana config set --url http://localhost:8899
+
     - name: Check solana config
       run: solana config get
-    - name: Install yarn dependencies
+
+    # Install Yarn dependencies
+    - name: Install Yarn dependencies
       run: yarn install
-    - name: Build
+
+    # Build and test using Anchor
+    - name: Build with Anchor
       run: anchor build
-    - name: Run tests
+
+    - name: Run Anchor tests
       run: anchor test
