@@ -19,8 +19,10 @@ jobs:
     # Install Solana CLI
     - name: Install Solana CLI
       run: |
-        sh -c "$(curl -sSfL https://release.anza.xyz/v1.15.2/install)"
+        sh -c "$(curl -sSfL https://release.anza.xyz/v1.18.25/install)"
+        export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
         echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+        solana --version   # short-circuit here if solana installation failed
 
     # Set up Rust and dependencies
     - name: Install Rust
