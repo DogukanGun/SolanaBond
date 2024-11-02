@@ -41,12 +41,16 @@ mod test {
 
 
     #[test]
-    fn test_foreign_contract() -> Result<()> {
+    fn test_foreign_contract_mem_size() {
         assert_eq!(
             ForeignContract::MAXIMUM_SIZE,
             size_of::<u16>() + size_of::<Pubkey>() + size_of::<Pubkey>()
         );
+    }
 
+
+    #[test]
+    fn test_foreign_contract_verify() -> Result<()> {
         let chain: u16 = 2;
         let address = Pubkey::new_unique();
         let token_bridge_foreign_endpoint = Pubkey::new_unique();

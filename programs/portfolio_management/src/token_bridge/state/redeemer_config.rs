@@ -11,7 +11,6 @@ pub struct InboundTokenBridgeAddresses {
 impl InboundTokenBridgeAddresses {
     const MAXIMUM_SIZE: usize =
             32      // config
-        +   32      // authority_signer
         +   32      // wormhole_bridge
     ;
 }
