@@ -1,10 +1,10 @@
 use anchor_lang::prelude::*;
-use wormhole_anchor_sdk::{
-    token_bridge::EndpointRegistration,
-    wormhole::CHAIN_ID_SOLANA,
+use wormhole_anchor_sdk::wormhole::CHAIN_ID_SOLANA;
+use wormhole_anchor_sdk::token_bridge::{
+    program::TokenBridge, EndpointRegistration,
 };
-use crate::token_bridge::state::ForeignContract;
-use crate::token_bridge::error::TokenBridgeError;
+
+use crate::token_bridge::{SenderConfig, ForeignContract, TokenBridgeError};
 
 
 #[derive(Accounts)]
@@ -16,11 +16,20 @@ pub struct RegisterForeignContract<'info> {
     pub owner: Signer<'info>,
 
     #[account(
+        has_one = owner @ TokenBridgeError::OwnerOnly,
+        seeds = [SenderConfig::SEED_PREFIX],
+        bump
+    )]
+    /// this program requires that the `owner` specified in the context equals the pubkey specified
+    /// in this account
+    pub config: Account<'info, SenderConfig>,
+
+    #[account(
         init_if_needed,
         payer = owner,
-        space = ForeignContract::MAXIMUM_SIZE,
+        space = 8 + ForeignContract::MAXIMUM_SIZE,
         seeds = [
-            b"foreign_contract",
+            ForeignContract::SEED_PREFIX,
             &chain.to_le_bytes()[..]
         ],
         bump
@@ -29,11 +38,29 @@ pub struct RegisterForeignContract<'info> {
     /// if there already is a contract address saved in this account, overwrite it.
     pub foreign_contract: Account<'info, ForeignContract>,
 
+
+    /******************************
+     **** TOKEN BRIDGE ACCOUNTS ***
+     ******************************/
+
+    #[account(
+        seeds = [
+            &chain.to_le_bytes(),
+            token_bridge_foreign_endpoint.emitter_address.as_ref()
+        ],
+        bump,
+        seeds::program = token_bridge_program.key
+    )]
     /// Token bridge foriegn endpoint. This account should really be one endpoint per chain, but
     /// Token Bridge's PDA allows for multiple endpoints for each chain. We store the proper
     /// endpoint for the emitter chain.
     pub token_bridge_foreign_endpoint: Account<'info, EndpointRegistration>,
 
+    /*****************
+     *** PROGRAMS ****
+     *****************/
+
+    pub token_bridge_program: Program<'info, TokenBridge>,
     pub system_program: Program<'info, System>
 }
 

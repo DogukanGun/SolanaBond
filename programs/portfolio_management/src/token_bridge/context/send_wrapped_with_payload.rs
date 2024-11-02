@@ -1,16 +1,30 @@
 use anchor_lang::prelude::*;
 use anchor_spl::{
+    token::{
+        TokenAccount, Token,
+        Transfer, Approve, CloseAccount,
+        transfer, approve, close_account
+    },
     associated_token::AssociatedToken,
-    token::{close_account, transfer, approve},
-    token::{CloseAccount, Transfer, Approve, Token, TokenAccount},
 };
-use wormhole_anchor_sdk::{
-    token_bridge::{program::TokenBridge, transfer_wrapped_with_payload, Config, TransferWrappedWithPayload, WrappedMeta, WrappedMint}, wormhole::{program::Wormhole, BridgeData, FeeCollector, SequenceTracker, CHAIN_ID_SOLANA}
+use wormhole_anchor_sdk::wormhole::{
+    program::Wormhole,
+    BridgeData, SequenceTracker, FeeCollector,
+    CHAIN_ID_SOLANA
+};
+use wormhole_anchor_sdk::token_bridge::{
+    program::TokenBridge,
+    WrappedMint, WrappedMeta, Config,
+    TransferWrappedWithPayload, transfer_wrapped_with_payload
 };
 
-use crate::{message::TokenMessage, token_bridge::{
-    error::TokenBridgeError, state::{ForeignContract, SenderConfig}
-}};
+use crate::{
+    TokenMessage,
+    token_bridge::{
+        SenderConfig, ForeignContract, TokenBridgeError,
+        SEED_PREFIX_BRIDGED, SEED_PREFIX_CUSTODY
+    }
+};
 
 
 #[derive(Accounts)]
@@ -20,7 +34,7 @@ pub struct SendWrappedWithPayload<'info> {
     pub payer: Signer<'info>,
 
     #[account(
-        seeds = [b"sender"],
+        seeds = [SenderConfig::SEED_PREFIX],
         bump
     )]
     /// acts as token bridge sender PDA
@@ -43,7 +57,7 @@ pub struct SendWrappedWithPayload<'info> {
         init,
         payer = payer,
         seeds = [
-            b"custody",
+            SEED_PREFIX_CUSTODY,
             wrapped_mint.key().as_ref()
         ],
         bump,
@@ -131,7 +145,7 @@ pub struct SendWrappedWithPayload<'info> {
     #[account(
         mut,
         seeds = [
-            b"bridged",
+            SEED_PREFIX_BRIDGED,
             &token_bridge_sequence.next_value().to_le_bytes()[..]
         ],
         bump
@@ -148,7 +162,6 @@ pub struct SendWrappedWithPayload<'info> {
     pub wormhole_program: Program<'info, Wormhole>,
     pub token_bridge_program: Program<'info, TokenBridge>,
     pub system_program: Program<'info, System>,
-
 }
 
 impl<'info> SendWrappedWithPayload<'info> {
@@ -162,7 +175,7 @@ impl<'info> SendWrappedWithPayload<'info> {
         // 2. Sign token bridge's transfer_wrapped instruction.
         // 3. Close the temporary custody account.
         let config_seeds = &[
-            b"sender".as_ref(),
+            SenderConfig::SEED_PREFIX.as_ref(),
             &[self.config.bump],
         ];
 
@@ -231,7 +244,7 @@ impl<'info> SendWrappedWithPayload<'info> {
                 &[
                     &config_seeds[..],
                     &[
-                        b"bridged",
+                        SEED_PREFIX_BRIDGED,
                         &self.token_bridge_sequence.next_value().to_le_bytes()[..],
                         &[bumps.wormhole_message]
                     ]

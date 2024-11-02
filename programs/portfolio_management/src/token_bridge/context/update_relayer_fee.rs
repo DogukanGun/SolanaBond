@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::token_bridge::{error::TokenBridgeError, state::RedeemerConfig};
+use crate::token_bridge::{RedeemerConfig, TokenBridgeError};
 
 
 #[derive(Accounts)]
@@ -12,11 +12,15 @@ pub struct UpdateRelayerFee<'info> {
     #[account(
         mut,
         has_one = owner @ TokenBridgeError::OwnerOnly,
-        seeds = [b"redeemer"],
+        seeds = [RedeemerConfig::SEED_PREFIX],
         bump
     )]
     /// requires `owner` in [`UpdateRelayerFee`] equals the [`Pubkey`] specified in this config
     pub config: Account<'info, RedeemerConfig>,
+
+    /*****************
+     *** PROGRAMS ****
+     *****************/
 
     pub system_program: Program<'info, System>
 }

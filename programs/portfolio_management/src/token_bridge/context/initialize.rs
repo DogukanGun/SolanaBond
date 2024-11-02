@@ -1,9 +1,13 @@
 use anchor_lang::prelude::*;
-use wormhole_anchor_sdk::wormhole;
-use wormhole_anchor_sdk::token_bridge as wh_token_bridge;
+use wormhole_anchor_sdk::wormhole::{
+    program::Wormhole, FeeCollector, SequenceTracker, BridgeData
+};
+use wormhole_anchor_sdk::token_bridge::{
+    program::TokenBridge, Config,
+    SEED_PREFIX_MINT_AUTHORITY, SEED_PREFIX_AUTHORITY_SIGNER, SEED_PREFIX_EMITTER
+};
 
-use crate::token_bridge::state::{SenderConfig, RedeemerConfig};
-use crate::token_bridge::TokenBridgeError;
+use crate::token_bridge::{SenderConfig, RedeemerConfig, TokenBridgeError};
 
 
 #[derive(Accounts)]
@@ -40,17 +44,17 @@ pub struct Initialize<'info> {
      ******************************/
 
     #[account(
-        seeds = [wh_token_bridge::Config::SEED_PREFIX],
+        seeds = [Config::SEED_PREFIX],
         bump,
         seeds::program = token_bridge_program.key
     )]
     /// Token bridge program needs this account to invoke wormhole program to post messages.
     /// Even though it is a required account for redeeming token transfers, it is not actually
     /// used for completing these transfers.
-    pub token_bridge_config: Account<'info, wh_token_bridge::Config>,
+    pub token_bridge_config: Account<'info, Config>,
 
     #[account(
-        seeds = [wh_token_bridge::SEED_PREFIX_AUTHORITY_SIGNER],
+        seeds = [SEED_PREFIX_AUTHORITY_SIGNER],
         bump,
         seeds::program = token_bridge_program.key
     )]
@@ -59,7 +63,7 @@ pub struct Initialize<'info> {
     pub token_bridge_authority_signer: UncheckedAccount<'info>,
 
     #[account(
-        seeds = [wh_token_bridge::SEED_PREFIX_EMITTER],
+        seeds = [SEED_PREFIX_EMITTER],
         bump,
         seeds::program = token_bridge_program.key
     )]
@@ -68,15 +72,15 @@ pub struct Initialize<'info> {
     pub token_bridge_emitter: UncheckedAccount<'info>,
 
     #[account(
-        seeds = [wormhole::SequenceTracker::SEED_PREFIX],
+        seeds = [SequenceTracker::SEED_PREFIX],
         bump,
         seeds::program = token_bridge_program.key
     )]
     /// keeps track of the sequence number of the last posted message
-    pub token_bridge_sequence: Account<'info, wormhole::SequenceTracker>,
+    pub token_bridge_sequence: Account<'info, SequenceTracker>,
 
     #[account(
-        seeds = [wh_token_bridge::SEED_PREFIX_MINT_AUTHORITY],
+        seeds = [SEED_PREFIX_MINT_AUTHORITY],
         bump,
         seeds::program = token_bridge_program.key
     )]
@@ -85,25 +89,25 @@ pub struct Initialize<'info> {
     pub token_bridge_mint_authority: UncheckedAccount<'info>,
 
     #[account(
-        seeds = [wormhole::BridgeData::SEED_PREFIX],
+        seeds = [BridgeData::SEED_PREFIX],
         bump,
         seeds::program = wormhole_program.key
     )]
-    pub wormhole_bridge: Account<'info, wormhole::BridgeData>,
+    pub wormhole_bridge: Account<'info, BridgeData>,
 
     #[account(
-        seeds = [wormhole::FeeCollector::SEED_PREFIX],
+        seeds = [FeeCollector::SEED_PREFIX],
         bump,
         seeds::program = wormhole_program.key
     )]
-    pub wormhole_fee_collector: Account<'info, wormhole::FeeCollector>,
+    pub wormhole_fee_collector: Account<'info, FeeCollector>,
 
     /*****************
      *** PROGRAMS ****
      *****************/
 
-    pub wormhole_program: Program<'info, wormhole::program::Wormhole>,
-    pub token_bridge_program: Program<'info, wh_token_bridge::program::TokenBridge>,
+    pub wormhole_program: Program<'info, Wormhole>,
+    pub token_bridge_program: Program<'info, TokenBridge>,
     pub system_program: Program<'info, System>,
 }
 

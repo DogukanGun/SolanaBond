@@ -1,16 +1,28 @@
 use anchor_lang::prelude::*;
 use anchor_spl::{
-    associated_token::{get_associated_token_address, AssociatedToken},
-    token::{approve, close_account, transfer, Approve, CloseAccount, Token, TokenAccount, Transfer},
+    token::{
+        TokenAccount, Token,
+        Transfer, CloseAccount,
+        transfer, close_account
+    },
+    associated_token::{AssociatedToken, get_associated_token_address}
 };
-use wormhole_anchor_sdk::{
-    token_bridge::{complete_transfer_wrapped_with_payload, program::TokenBridge, transfer_wrapped_with_payload, CompleteTransferWrappedWithPayload, Config, EndpointRegistration, WrappedMeta, WrappedMint},
-    wormhole::{program::Wormhole, BridgeData, FeeCollector, SequenceTracker, CHAIN_ID_SOLANA, SEED_PREFIX_POSTED_VAA}
+use wormhole_anchor_sdk::wormhole::{
+    program::Wormhole,
+    CHAIN_ID_SOLANA, SEED_PREFIX_POSTED_VAA
+};
+use wormhole_anchor_sdk::token_bridge::{
+    program::TokenBridge,
+    WrappedMint, WrappedMeta, Config, EndpointRegistration,
+    CompleteTransferWrappedWithPayload, complete_transfer_wrapped_with_payload
 };
 
 use crate::{
-    message::{PostedTokenMessage, TokenMessage},
-    token_bridge::{error::TokenBridgeError, state::{foreign_contract, ForeignContract, RedeemerConfig}}
+    TokenMessage, PostedTokenMessage,
+    token_bridge::{
+        RedeemerConfig, ForeignContract, TokenBridgeError,
+        SEED_PREFIX_CUSTODY
+    }
 };
 
 
@@ -30,14 +42,14 @@ pub struct RedeemWrappedWithPayload<'info> {
     pub payer_token_account: UncheckedAccount<'info>,
 
     #[account(
-        seeds = [b"redeemer"],
+        seeds = [RedeemerConfig::SEED_PREFIX],
         bump
     )]
     pub config: Account<'info, RedeemerConfig>,
 
     #[account(
         seeds = [
-            b"foreign_contract",
+            ForeignContract::SEED_PREFIX,
             &vaa.emitter_chain().to_le_bytes()[..]
         ],
         bump,
@@ -60,7 +72,7 @@ pub struct RedeemWrappedWithPayload<'info> {
         init,
         payer = payer,
         seeds = [
-            b"custody",
+            SEED_PREFIX_CUSTODY,
             wrapped_mint.key().as_ref()
         ],
         bump,
@@ -172,7 +184,7 @@ impl<'info> RedeemWrappedWithPayload<'info> {
         // 3. Transfer remaining tokens to recipient
         // 4. Close the temporary custody account
         let config_seeds = &[
-            b"redeemer".as_ref(),
+            RedeemerConfig::SEED_PREFIX.as_ref(),
             &[self.config.bump]
         ];
 
