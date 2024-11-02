@@ -88,7 +88,6 @@ pub struct RedeemWrappedWithPayload<'info> {
     pub wrapped_mint: Account<'info, WrappedMint>,
 
     #[account(
-        mut,
         seeds = [
             WrappedMeta::SEED_PREFIX,
             wrapped_mint.key().as_ref()
@@ -123,7 +122,6 @@ pub struct RedeemWrappedWithPayload<'info> {
      ******************************/
 
     #[account(
-        mut,
         address = config.token_bridge.config @ TokenBridgeError::InvalidTokenBridgeConfigAddress
     )]
     pub token_bridge_config: Account<'info, Config>,
@@ -181,7 +179,7 @@ impl<'info> RedeemWrappedWithPayload<'info> {
         // Redeem token transfer
         let complete_transfer_instructions = CompleteTransferWrappedWithPayload {
             payer: self.payer.to_account_info(),
-            config: self.config.to_account_info(),
+            config: self.token_bridge_config.to_account_info(),
             vaa: self.vaa.to_account_info(),
             claim: self.token_bridge_claim.to_account_info(),
             foreign_endpoint: self.token_bridge_foreign_endpoint.to_account_info(),

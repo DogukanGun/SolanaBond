@@ -29,7 +29,6 @@ pub struct RegisterForeignContract<'info> {
     /// if there already is a contract address saved in this account, overwrite it.
     pub foreign_contract: Account<'info, ForeignContract>,
 
-
     /// Token bridge foriegn endpoint. This account should really be one endpoint per chain, but
     /// Token Bridge's PDA allows for multiple endpoints for each chain. We store the proper
     /// endpoint for the emitter chain.
