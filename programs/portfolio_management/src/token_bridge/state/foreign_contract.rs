@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::message::PostedTokenMessage;
+use crate::{PostedTokenMessage, token_bridge};
 
 
 #[account]
@@ -20,6 +20,9 @@ impl ForeignContract {
         +   32      // address
         +   32      // token_bridge_foreign_endpoint
     ;
+
+    /// b"foreign_contract"
+    pub const SEED_PREFIX: &'static [u8; 16] = token_bridge::SEED_PREFIX_FOREIGN_CONTRACT;
 
     /// Convenience method to check whether an address equals to the one saved in this account.
     pub fn verify(&self, vaa: &PostedTokenMessage) -> bool {

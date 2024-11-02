@@ -1,5 +1,7 @@
 use anchor_lang::prelude::*;
 
+use crate::token_bridge;
+
 
 #[derive(Default, AnchorSerialize, AnchorDeserialize, Clone)]
 pub struct InboundTokenBridgeAddresses {
@@ -39,7 +41,7 @@ impl RedeemerConfig {
     ;
 
     /// b"redeemer"
-    pub const SEED_PREFIX: &'static [u8; 8] = b"redeemer";
+    pub const SEED_PREFIX: &'static [u8; 8] = token_bridge::SEED_PREFIX_REDEEMER;
 
     /// Relayer fee is determined by the percentage (relayer_fee / precision)
     pub fn compute_relayer_fee_amount(&self, amount: u64) -> u64 {

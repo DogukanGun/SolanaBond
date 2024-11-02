@@ -1,5 +1,7 @@
 use anchor_lang::prelude::*;
 
+use crate::token_bridge;
+
 
 #[derive(Default, AnchorSerialize, AnchorDeserialize, Clone)]
 pub struct OutboundTokenBridgeAddresses {
@@ -41,7 +43,7 @@ impl SenderConfig {
     ;
 
     /// b"sender"
-    pub const SEED_PREFIX: &'static [u8; 6] = b"sender";
+    pub const SEED_PREFIX: &'static [u8; 6] = token_bridge::SEED_PREFIX_SENDER;
 }
 
 #[cfg(test)]
