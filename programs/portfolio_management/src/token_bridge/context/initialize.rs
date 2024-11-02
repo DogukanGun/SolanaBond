@@ -1,5 +1,9 @@
 use anchor_lang::prelude::*;
+use wormhole_anchor_sdk::wormhole;
+use wormhole_anchor_sdk::token_bridge as wh_token_bridge;
+
 use crate::token_bridge::state::{SenderConfig, RedeemerConfig};
+use crate::token_bridge::TokenBridgeError;
 
 
 #[derive(Accounts)]
@@ -12,7 +16,7 @@ pub struct Initialize<'info> {
         init,
         payer = owner,
         space = 8 + SenderConfig::MAXIMUM_SIZE,
-        seeds = [b"sender"],
+        seeds = [SenderConfig::SEED_PREFIX],
         bump
     )]
     /// Saves program data for outbound transfers and
@@ -23,27 +27,111 @@ pub struct Initialize<'info> {
         init,
         payer = owner,
         space = 8 + RedeemerConfig::MAXIMUM_SIZE,
-        seeds = [b"redeemer"],
+        seeds = [RedeemerConfig::SEED_PREFIX],
         bump
     )]
     /// Saves program data for inbound transfers and
     /// saves payer of the [`initialize`](crate::initialize) instruction as the program's owner
     pub redeemer_config: Account<'info, RedeemerConfig>,
 
+
+    /******************************
+     **** TOKEN BRIDGE ACCOUNTS ***
+     ******************************/
+
+    #[account(
+        seeds = [wh_token_bridge::Config::SEED_PREFIX],
+        bump,
+        seeds::program = token_bridge_program.key
+    )]
+    /// Token bridge program needs this account to invoke wormhole program to post messages.
+    /// Even though it is a required account for redeeming token transfers, it is not actually
+    /// used for completing these transfers.
+    pub token_bridge_config: Account<'info, wh_token_bridge::Config>,
+
+    #[account(
+        seeds = [wh_token_bridge::SEED_PREFIX_AUTHORITY_SIGNER],
+        bump,
+        seeds::program = token_bridge_program.key
+    )]
+    /// CHECK: this isn't an account that holds data; it is purely just a signer for SPL transfers
+    /// when it is delegated sending approval for the SPL token
+    pub token_bridge_authority_signer: UncheckedAccount<'info>,
+
+    #[account(
+        seeds = [wh_token_bridge::SEED_PREFIX_EMITTER],
+        bump,
+        seeds::program = token_bridge_program.key
+    )]
+    /// CHECK: this isn't an account that holds data; it is purely just a signer for posting
+    /// wormhole messages on behalf of the token bridge program
+    pub token_bridge_emitter: UncheckedAccount<'info>,
+
+    #[account(
+        seeds = [wormhole::SequenceTracker::SEED_PREFIX],
+        bump,
+        seeds::program = token_bridge_program.key
+    )]
+    /// keeps track of the sequence number of the last posted message
+    pub token_bridge_sequence: Account<'info, wormhole::SequenceTracker>,
+
+    #[account(
+        seeds = [wh_token_bridge::SEED_PREFIX_MINT_AUTHORITY],
+        bump,
+        seeds::program = token_bridge_program.key
+    )]
+    /// CHECK: this isn't an account that holds data; it is purely just a signer (SPL mint
+    /// authority) for token bridge wrapped assets
+    pub token_bridge_mint_authority: UncheckedAccount<'info>,
+
+    #[account(
+        seeds = [wormhole::BridgeData::SEED_PREFIX],
+        bump,
+        seeds::program = wormhole_program.key
+    )]
+    pub wormhole_bridge: Account<'info, wormhole::BridgeData>,
+
+    #[account(
+        seeds = [wormhole::FeeCollector::SEED_PREFIX],
+        bump,
+        seeds::program = wormhole_program.key
+    )]
+    pub wormhole_fee_collector: Account<'info, wormhole::FeeCollector>,
+
+    /*****************
+     *** PROGRAMS ****
+     *****************/
+
+    pub wormhole_program: Program<'info, wormhole::program::Wormhole>,
+    pub token_bridge_program: Program<'info, wh_token_bridge::program::TokenBridge>,
     pub system_program: Program<'info, System>,
 }
 
 impl<'info> Initialize<'info> {
-    pub fn initialize(&mut self, bumps: &InitializeBumps) -> Result<()> {
+    pub fn initialize(&mut self, relayer_fee: u32, relayer_fee_precision: u32, bumps: &InitializeBumps) -> Result<()> {
+        require!(relayer_fee < relayer_fee_precision, TokenBridgeError::InvalidRelayerFee);
+
         // initialize program's sender config
         let sender_config = &mut self.sender_config;
         sender_config.owner = self.owner.key();
         sender_config.bump = bumps.sender_config;
+        // init token bridge and wormhole related addresses
+        sender_config.token_bridge.config = self.token_bridge_config.key();
+        sender_config.token_bridge.authority_signer = self.token_bridge_authority_signer.key();
+        sender_config.token_bridge.emitter = self.token_bridge_emitter.key();
+        sender_config.token_bridge.sequence = self.token_bridge_sequence.key();
+        sender_config.token_bridge.wormhole_bridge = self.wormhole_bridge.key();
+        sender_config.token_bridge.wormhole_fee_collector = self.wormhole_fee_collector.key();
 
         // initialize program's redeemer config
         let redeemer_config = &mut self.redeemer_config;
         redeemer_config.owner = self.owner.key();
         redeemer_config.bump = bumps.redeemer_config;
+        redeemer_config.relayer_fee = relayer_fee;
+        redeemer_config.relayer_fee_precision = relayer_fee_precision;
+        // init token bridge and wormhole related addresses
+        redeemer_config.token_bridge.config = self.token_bridge_config.key();
+        redeemer_config.token_bridge.mint_authority = self.token_bridge_mint_authority.key();
 
         Ok(())
     }
