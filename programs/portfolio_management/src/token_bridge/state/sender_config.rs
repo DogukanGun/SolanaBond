@@ -41,7 +41,7 @@ impl SenderConfig {
     ;
 
     /// b"sender"
-    pub const SEED_PREFIX: &[u8; 6] = b"sender";
+    pub const SEED_PREFIX: &'static [u8; 6] = b"sender";
 }
 
 #[cfg(test)]
@@ -50,11 +50,15 @@ mod test {
     use std::mem::size_of;
 
     #[test]
-    fn test_sender_config_mem_size() {
+    fn test_outbound_addresses_mem_size() {
         assert_eq!(
             OutboundTokenBridgeAddresses::MAXIMUM_SIZE,
             size_of::<OutboundTokenBridgeAddresses>()
-        );
+        )
+    }
+
+    #[test]
+    fn test_mem_size() {
         assert_eq!(
             SenderConfig::MAXIMUM_SIZE,
             size_of::<Pubkey>() + size_of::<u8>() + size_of::<OutboundTokenBridgeAddresses>() + size_of::<u8>()

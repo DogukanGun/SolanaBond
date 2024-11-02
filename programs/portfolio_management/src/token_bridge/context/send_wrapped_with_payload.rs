@@ -206,7 +206,7 @@ impl<'info> SendWrappedWithPayload<'info> {
         let transfer_instructions = TransferWrappedWithPayload {
             payer: self.payer.to_account_info(),
             config: self.token_bridge_config.to_account_info(),
-            from: self.custody_token_account.to_account_info(),
+            from: self.custody_token_account.to_account_info(), // TEMPORARY CUSTODY ACCOUNT
             from_owner: self.config.to_account_info(),
             wrapped_mint: self.wrapped_mint.to_account_info(),
             wrapped_metadata: self.wrapped_mint_meta.to_account_info(),
