@@ -1,14 +1,12 @@
-use anchor_lang::prelude::*;
+use anchor_lang::error_code;
 
 
 #[error_code]
 pub enum TokenBridgeError {
-    #[msg("OwnerOnly")]
-    /// Only the program owner is permitted.
+    #[msg("Only the program owner is permitted.")]
     OwnerOnly,
 
-    #[msg("InvalidRelayerFee")]
-    /// Specified relayer fee must be less than its precision
+    #[msg("Specified relayer fee must be less than its precision.")]
     InvalidRelayerFee,
 
     #[msg("Specified Wormhole fee collector PDA is wrong")]
