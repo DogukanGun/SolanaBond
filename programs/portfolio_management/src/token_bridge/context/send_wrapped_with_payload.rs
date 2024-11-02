@@ -100,7 +100,6 @@ pub struct SendWrappedWithPayload<'info> {
     pub wormhole_bridge: Account<'info, BridgeData>,
 
     #[account(
-        mut,
         address = config.token_bridge.config @ TokenBridgeError::InvalidTokenBridgeConfigAddress
     )]
     pub token_bridge_config: Account<'info, Config>,
@@ -206,7 +205,7 @@ impl<'info> SendWrappedWithPayload<'info> {
         // Transfer wrapped token with encoded payload to the bridge
         let transfer_instructions = TransferWrappedWithPayload {
             payer: self.payer.to_account_info(),
-            config: self.config.to_account_info(),
+            config: self.token_bridge_config.to_account_info(),
             from: self.custody_token_account.to_account_info(),
             from_owner: self.config.to_account_info(),
             wrapped_mint: self.wrapped_mint.to_account_info(),
@@ -238,7 +237,7 @@ impl<'info> SendWrappedWithPayload<'info> {
                     ]
                 ]
             ),
-            batch_id, amount, recipient_address.to_bytes(), recipient_chain, payload, program_id,
+            batch_id, amount, self.foreign_contract.address.to_bytes(), recipient_chain, payload, program_id,
         )?;
 
         // Close the temporary custody account
