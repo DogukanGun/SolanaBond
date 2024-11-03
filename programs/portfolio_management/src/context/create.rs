@@ -39,10 +39,12 @@ impl<'info> CreateBond<'info>  {
     pub fn create_bond(&mut self, feed_id: String, bump: &CreateBondBumps) -> Result<()> {
 
         // TODO: set feed_id in the investors or use a fixed feed_id for now
+        //       due to outdated library (pyth-solana-sdk) we must rely on a different source
 
         self.investors_account.investors_bump = bump.investors_account;
         self.investors_account.vault_bump = bump.vault;
         self.investors_account.investors = Vec::with_capacity(InvestorsAccount::INVESTORS_CAPACITY);
+
         Ok(())
     }
 }

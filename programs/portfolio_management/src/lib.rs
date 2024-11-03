@@ -2,14 +2,16 @@ use anchor_lang::prelude::*;
 
 pub mod context;
 pub mod state;
-pub mod constants;
 pub mod message;
+pub mod constants;
+pub mod error;
 pub mod token_bridge;
 
 pub use context::*;
 pub use state::*;
 pub use message::*;
 pub use constants::*;
+pub use error::*;
 pub use token_bridge::context::*;
 
 declare_id!("E31tdKPpY99KpeWX1TKzi5wycWApYTJ7UAaiKNgUrhBF");
