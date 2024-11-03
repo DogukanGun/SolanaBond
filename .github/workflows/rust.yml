@@ -42,4 +42,5 @@ jobs:
       run: cargo --list
     - uses: nrwl/nx-set-shas@v4
     - run: anchor keys sync
+    - run: cargo test
     - run: anchor test
