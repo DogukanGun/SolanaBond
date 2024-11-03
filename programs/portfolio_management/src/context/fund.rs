@@ -56,6 +56,8 @@ impl<'info> Fund<'info> {
             amount
         )?;
 
+        // at this point assume transfer is successful
+
         let investors: &mut Vec<Investor> = &mut self.investors_account.investors;
         if let Some(investor) = investors.iter_mut().find(|investor| investor.identifier == from_account.key()) {
             investor.amount += amount;
