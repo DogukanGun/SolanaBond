@@ -1,3 +1,6 @@
+//! These instructions are implemented for wrapped token transfers as a template and may change
+//! rapidly during development.
+
 use anchor_lang::prelude::*;
 
 use crate::token_bridge::{
@@ -9,9 +12,7 @@ use crate::token_bridge::{
 };
 
 
-/// Initializes a token bridge by
-/// 1. init sender config
-/// 2. init redeemer config
+/// Initializes a token bridge by 1. init sender config 2. init redeemer config
 pub fn initialize(ctx: Context<Initialize>, relayer_fee: u32, relayer_fee_precision: u32) -> Result<()> {
     ctx.accounts.initialize(relayer_fee, relayer_fee_precision, &ctx.bumps)
 }
