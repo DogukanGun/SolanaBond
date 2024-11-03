@@ -5,7 +5,7 @@ use context::*;
 pub mod state;
 
 
-declare_id!("91dxXHBrNHJQHkze1C8JuuTnE6nvg5r9Ltbs5NdD5MQZ");
+declare_id!("E31tdKPpY99KpeWX1TKzi5wycWApYTJ7UAaiKNgUrhBF");
 
 #[program]
 pub mod portfolio_management {
