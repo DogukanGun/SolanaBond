@@ -1,9 +1,9 @@
 use anchor_lang::prelude::*;
 
 
-pub const MAX_INVESTORS: usize = 10;
-
 #[account]
+#[derive(Default)]
+/// Holds bond data for common feed_id
 pub struct InvestorsAccount {
     pub num_investors: u8,              // Number of investors      (1)
     pub investors: Vec<Investor>,       // Vector of investors      (4 + (item_size * capacity))
@@ -15,13 +15,17 @@ pub struct InvestorsAccount {
 }
 
 impl InvestorsAccount {
+    pub const INVESTORS_CAPACITY: usize = 10;
     pub const MAXIMUM_SIZE: usize =
         (1) +                                                           // num_investors
-        (4 + Investor::MAXIMUM_SIZE * Investor::INVESTORS_CAPACITY) +   // investors
+        (4 + Investor::MAXIMUM_SIZE * Self::INVESTORS_CAPACITY) +       // investors
         (32) +                                                          // token_address
         (32) +                                                          // feed_id
         (1) +                                                           // vault_bump
         (1);                                                            // investors_bump
+
+    /// b"investors"
+    pub const SEED_PREFIX: &'static [u8; 9] = b"investors";
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
@@ -32,7 +36,6 @@ pub struct Investor {
 }
 
 impl Investor {
-    pub const INVESTORS_CAPACITY: usize = 10;
     pub const MAXIMUM_SIZE: usize = (32) + (4) + (4);
 
     pub fn new(identifier: Pubkey, amount: f32) -> Self {
@@ -41,5 +44,29 @@ impl Investor {
             amount,
             net_profit: 0_f32,
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use std::mem::size_of;
+
+    #[test]
+    fn test_investor_mem_size() {
+        assert_eq!(
+            Investor::MAXIMUM_SIZE,
+            size_of::<Pubkey>() + size_of::<f32>() + size_of::<f32>()
+        );
+    }
+
+    #[test]
+    fn test_investors_account_mem_size() {
+        assert_eq!(
+            InvestorsAccount::MAXIMUM_SIZE,
+                    size_of::<u8>()
+                +   4 + (Investor::MAXIMUM_SIZE * InvestorsAccount::INVESTORS_CAPACITY)   // Vec
+                +   size_of::<Pubkey>() + size_of::<[u8; 32]>() + size_of::<u8>() + size_of::<u8>()
+        );
     }
 }
