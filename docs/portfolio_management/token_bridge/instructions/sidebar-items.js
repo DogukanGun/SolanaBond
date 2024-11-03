@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["initialize","redeem_wrapped_with_payload","register_foreign_contract","send_wrapped_with_payload","update_relayer_fee"]};

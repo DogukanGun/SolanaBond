@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["CreateBond","Fund","Initialize","RedeemWrappedWithPayload","RegisterForeignContract","SendWrappedWithPayload","Take","Trade","UpdateRelayerFee"]};

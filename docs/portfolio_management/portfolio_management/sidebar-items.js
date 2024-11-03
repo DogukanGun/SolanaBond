@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["create_bond","invest_in_bond","redeem_bond","redeem_wrapped_with_payload","register_foreign_contract","send_wrapped_with_payload","token_bridge_initialize","trade","update_relayer_fee"]};
