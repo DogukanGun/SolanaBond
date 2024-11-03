@@ -52,7 +52,7 @@ impl<'info> Fund<'info> {
         transfer(cpi_ctx, amount)?;
 
         let investors: &mut Vec<Investor> = &mut self.investors_account.investors;
-        if let Some(investor) = investors.iter_mut().find(|investor| investor.identifier == to_account.key()) {
+        if let Some(investor) = investors.iter_mut().find(|investor| investor.identifier == from_account.key()) {
             investor.amount += amount;
         } else {
             self.investors_account.investors.push(Investor::new(to_account.key(), amount))
