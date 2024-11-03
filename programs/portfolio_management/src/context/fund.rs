@@ -47,9 +47,14 @@ impl<'info> Fund<'info> {
             authority: self.payer.to_account_info(),
         };
 
-        let cpi_ctx = CpiContext::new(self.token_program.to_account_info(), transfer_instruction);
-
-        transfer(cpi_ctx, amount)?;
+        transfer(
+            // ctx
+            CpiContext::new(
+                self.token_program.to_account_info(),
+                transfer_instruction
+            ),
+            amount
+        )?;
 
         let investors: &mut Vec<Investor> = &mut self.investors_account.investors;
         if let Some(investor) = investors.iter_mut().find(|investor| investor.identifier == from_account.key()) {

@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{transfer, Mint, Token, TokenAccount, Transfer};
 
-use crate::{InvestorsAccount, SEED_PREFIX_VAULT};
+use crate::{Investor, InvestorsAccount, SEED_PREFIX_VAULT};
 
 
 #[derive(Accounts)]
@@ -40,16 +40,38 @@ pub struct Take<'info> {
 }
 
 impl<'info> Take<'info> {
-    pub fn withdraw(&self) -> Result<()> {
-        let cpi_accounts = Transfer {
-            from: self.vault.to_account_info(),
-            to: self.maker_ata.to_account_info(),
-            authority: self.auth.to_account_info(),
+    pub fn withdraw(&mut self) -> Result<()> {
+        let from_account = self.vault.to_account_info();
+        let to_account = self.maker_ata.to_account_info();
+        let amount = self.vault.amount;
+
+        let transfer_instructions = Transfer {
+            from: from_account.clone(),
+            to: to_account.clone(),
+            authority: self.auth.to_account_info()
         };
-        let ctx = CpiContext::new(
-            self.token_program.to_account_info(),
-            cpi_accounts,
-        );
-        transfer(ctx, self.vault.amount)
+        transfer(
+            // ctx
+            CpiContext::new(
+                self.token_program.to_account_info(),
+                transfer_instructions
+            ),
+            amount
+        )?;
+
+        // update bond data
+
+        let investors: &mut Vec<Investor> = &mut self.investors_account.investors;
+        if let Some(idx_investor) = investors.iter().position(|investor| investor.identifier == to_account.key()) {
+            let investor = &mut investors[idx_investor];
+            assert!(investor.amount >= amount);
+
+            // if dropped to zero then remove this account from the bond
+            if investor.amount == 0 {
+                investors.remove(idx_investor);
+            }
+        }
+
+        Ok(())
     }
 }
