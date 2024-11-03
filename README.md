@@ -2,6 +2,11 @@
 
 SolanaBond is a decentralized finance (DeFi) application built on the Solana blockchain that enables users to create and manage bonds. It utilizes the Wormhole protocol to facilitate cross-chain interactions, providing a secure and efficient way to manage financial assets.
 
+## The architecture of the application 
+
+![SolanaBond](https://github.com/user-attachments/assets/650bb42e-8880-487a-8fda-bf1a9034de15)
+
+
 ## Features
 
 - Create and manage bonds on the Solana blockchain
