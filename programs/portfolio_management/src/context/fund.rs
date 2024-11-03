@@ -1,31 +1,38 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{transfer, Mint, Token, TokenAccount, Transfer};
 
-use crate::state::{Investor, InvestorsAccount};
+use crate::{Investor, InvestorsAccount, SEED_PREFIX_VAULT};
+
 
 #[derive(Accounts)]
 pub struct Fund<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
-    pub auth: SystemAccount<'info>,
+
     #[account(mut)]
     pub maker_token: Box<Account<'info, Mint>>,
+
     #[account(mut)]
     pub maker_ata: Account<'info, TokenAccount>,
+
     #[account(
         mut,
-        seeds = [b"investors"],
+        seeds = [InvestorsAccount::SEED_PREFIX],
         bump = investors_account.investors_bump
     )]
     pub investors_account: Account<'info, InvestorsAccount>,
+
     #[account(
         mut,
-        seeds = [b"vault"],
+        seeds = [SEED_PREFIX_VAULT],
         bump = investors_account.vault_bump,
         token::mint = maker_token,
         token::authority = auth
     )]
+
     pub vault: Account<'info, TokenAccount>,
+    pub auth: SystemAccount<'info>,
+
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
 }
@@ -44,6 +51,7 @@ impl<'info> Fund<'info> {
 
         transfer(cpi_ctx, amount)?;
 
+        /// TODO: change this to u32 or u64 type instead
         let amount_as_f32 = amount as f32 / 10_u32.pow(6_u32) as f32;
 
         let investors: &mut Vec<Investor> = &mut self.investors_account.investors;
