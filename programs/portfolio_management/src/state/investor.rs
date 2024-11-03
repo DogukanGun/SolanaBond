@@ -31,18 +31,18 @@ impl InvestorsAccount {
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
 pub struct Investor {
     pub identifier: Pubkey,             // Investor address
-    pub amount: f32,                    // Total amount invested
-    pub net_profit: f32,                // Total net profit, cannot be negative
+    pub amount: u64,                    // Total amount invested
+    pub net_profit: u64,                // Total net profit, cannot be negative
 }
 
 impl Investor {
-    pub const MAXIMUM_SIZE: usize = (32) + (4) + (4);
+    pub const MAXIMUM_SIZE: usize = (32) + (8) + (8);
 
-    pub fn new(identifier: Pubkey, amount: f32) -> Self {
+    pub fn new(identifier: Pubkey, amount: u64) -> Self {
         Self {
             identifier,
             amount,
-            net_profit: 0_f32,
+            net_profit: 0 as u64,
         }
     }
 }
@@ -56,7 +56,7 @@ mod test {
     fn test_investor_mem_size() {
         assert_eq!(
             Investor::MAXIMUM_SIZE,
-            size_of::<Pubkey>() + size_of::<f32>() + size_of::<f32>()
+            size_of::<Pubkey>() + size_of::<u64>() + size_of::<u64>()
         );
     }
 

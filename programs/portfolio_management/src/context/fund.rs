@@ -51,14 +51,11 @@ impl<'info> Fund<'info> {
 
         transfer(cpi_ctx, amount)?;
 
-        /// TODO: change this to u32 or u64 type instead
-        let amount_as_f32 = amount as f32 / 10_u32.pow(6_u32) as f32;
-
         let investors: &mut Vec<Investor> = &mut self.investors_account.investors;
         if let Some(investor) = investors.iter_mut().find(|investor| investor.identifier == to_account.key()) {
-            investor.amount += amount_as_f32;
+            investor.amount += amount;
         } else {
-            self.investors_account.investors.push(Investor::new(to_account.key(), amount_as_f32))
+            self.investors_account.investors.push(Investor::new(to_account.key(), amount))
         }
 
         Ok(())
