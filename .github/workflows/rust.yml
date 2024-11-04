@@ -1,0 +1,46 @@
+name: Rust
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+permissions:
+  actions: read
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
+  cancel-in-progress: true  
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: pnpm/action-setup@v2
+      with:
+        version: 8    
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 20
+        cache: 'npm'
+    - uses: metadaoproject/setup-anchor@v2
+      with:
+        anchor-version: '0.30.1'
+        solana-cli-version: '1.18.9'
+        node-version: '20.10.0'
+    - run: npm install --no-frozen-lockfile
+    - name: Generate new keygen
+      run: solana-keygen new --no-bip39-passphrase
+    - name: Set solana target cluster to local
+      run: solana config set --url http:localhost:8899
+    - name: Check solana config
+      run: solana config get
+    - name: cargo list
+      run: cargo --list
+    - uses: nrwl/nx-set-shas@v4
+    - run: anchor keys sync
+    - run: cargo test
+    - run: anchor test
