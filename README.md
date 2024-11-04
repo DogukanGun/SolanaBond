@@ -2,7 +2,7 @@
 
 SolanaBond is a decentralized finance (DeFi) application built on the Solana blockchain that enables users to create and manage bonds. It utilizes the Wormhole protocol to facilitate cross-chain interactions, providing a secure and efficient way to manage financial assets.
 
-## The architecture of the application 
+## The architecture of the application
 
 ![SolanaBond](https://github.com/user-attachments/assets/650bb42e-8880-487a-8fda-bf1a9034de15)
 
@@ -24,7 +24,8 @@ SolanaBond is a decentralized finance (DeFi) application built on the Solana blo
 ### Prerequisites
 
 - Rust and Cargo installed
-- Node.js and npm installed
+- Node.js (v23.1.0) and npm (v10.9.0) installed
+- anchor-cli 0.30.1 installed
 
 ### Installation
 
@@ -36,10 +37,15 @@ SolanaBond is a decentralized finance (DeFi) application built on the Solana blo
    ```bash
    cd SolanaBond
    ```
-3. Install dependencies:
+3. Install client dependencies:
    ```bash
+   nvm use # optional for node version manager users
    npm install
    ```
+4. Build the program:
+    ```bash
+    anchor build
+    ```
 
 ### Running the Project
 
