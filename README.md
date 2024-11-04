@@ -71,6 +71,15 @@ To run cargo tests (rustc cargo versions v1.82.0) use:
 cargo test
 ```
 
+To build the documentation and open it in your browser (suggested for rust development) use:
+```bash
+cargo doc -p portfolio_management --no-deps --open
+```
+
+### Documentation
+
+The documentation can be built using the command specified above.
+
 ## Contributing
 
 Contributions are welcome! Please create a pull request or open an issue for any improvements or bug fixes.
