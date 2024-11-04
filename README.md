@@ -64,6 +64,13 @@ cd app
 npm run dev
 ```
 
+### Development
+
+To run cargo tests (rustc cargo versions v1.82.0) use:
+```bash
+cargo test
+```
+
 ## Contributing
 
 Contributions are welcome! Please create a pull request or open an issue for any improvements or bug fixes.
